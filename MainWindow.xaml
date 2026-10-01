@@ -1,0 +1,860 @@
+<Window x:Class="SupplierPurchases.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ctrl="clr-namespace:SupplierPurchases.Controls"
+        mc:Ignorable="d"
+        Title="تجميع مشتريات الموردين"
+        Height="760"
+        Width="1180"
+        MinHeight="700"
+        MinWidth="1050"
+        WindowStartupLocation="CenterScreen"
+        FlowDirection="RightToLeft"
+        Background="{StaticResource CanvasBrush}">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="236" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Border Grid.Column="0" Background="#172033" Padding="18">
+            <DockPanel LastChildFill="True">
+                <StackPanel DockPanel.Dock="Top">
+                    <TextBlock Text="تجميع المشتريات"
+                               Foreground="White"
+                               FontSize="22"
+                               FontWeight="Bold"
+                               Margin="0,0,0,4" />
+                    <TextBlock Text="قوائم شراء حسب المورد"
+                               Foreground="#AEBED0"
+                               FontSize="13"
+                               Margin="0,0,0,22" />
+
+                    <Button Style="{StaticResource SidebarButton}" Click="DashboardButton_Click" ToolTip="لوحة التحكم">
+                        <DockPanel>
+                            <TextBlock Text="&#xE80F;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,0,0" />
+                            <TextBlock Text="الرئيسية" Margin="10,0,0,0" />
+                        </DockPanel>
+                    </Button>
+                    <Button Style="{StaticResource SidebarButton}" Click="NewOrderButton_Click" ToolTip="إضافة طلبية فرع">
+                        <DockPanel>
+                            <TextBlock Text="&#xE710;" FontFamily="Segoe MDL2 Assets" FontSize="16" />
+                            <TextBlock Text="طلبية جديدة" Margin="10,0,0,0" />
+                        </DockPanel>
+                    </Button>
+                    <Button Style="{StaticResource SidebarButton}" Click="OrdersButton_Click" ToolTip="عرض الطلبيات">
+                        <DockPanel>
+                            <TextBlock Text="&#xE8A5;" FontFamily="Segoe MDL2 Assets" FontSize="16" />
+                            <TextBlock Text="الطلبيات" Margin="10,0,0,0" />
+                        </DockPanel>
+                    </Button>
+                    <Button Style="{StaticResource SidebarButton}" Click="PurchaseButton_Click" ToolTip="إنشاء قائمة شراء">
+                        <DockPanel>
+                            <TextBlock Text="&#xE14C;" FontFamily="Segoe MDL2 Assets" FontSize="16" />
+                            <TextBlock Text="قائمة شراء" Margin="10,0,0,0" />
+                        </DockPanel>
+                    </Button>
+                    <Button Style="{StaticResource SidebarButton}" Click="SuppliersButton_Click" ToolTip="إدارة الموردين">
+                        <DockPanel>
+                            <TextBlock Text="&#xE716;" FontFamily="Segoe MDL2 Assets" FontSize="16" />
+                            <TextBlock Text="الموردون" Margin="10,0,0,0" />
+                        </DockPanel>
+                    </Button>
+                    <Button Style="{StaticResource SidebarButton}" Click="RulesButton_Click" ToolTip="قواعد إسناد المنتجات للموردين تلقائيًا">
+                        <DockPanel>
+                            <TextBlock Text="&#xE8B7;" FontFamily="Segoe MDL2 Assets" FontSize="16" />
+                            <TextBlock Text="قواعد الإسناد" Margin="10,0,0,0" />
+                        </DockPanel>
+                    </Button>
+                    <Button Style="{StaticResource SidebarButton}" Click="ImportProductsButton_Click" ToolTip="استيراد منتجات جديدة">
+                        <DockPanel>
+                            <TextBlock Text="&#xE8B5;" FontFamily="Segoe MDL2 Assets" FontSize="16" />
+                            <TextBlock Text="استيراد المنتجات" Margin="10,0,0,0" />
+                        </DockPanel>
+                    </Button>
+                    <Button Style="{StaticResource SidebarButton}" Click="MonthlyReportsButton_Click" ToolTip="التقارير الشهرية">
+                        <DockPanel>
+                            <TextBlock Text="&#xEC92;" FontFamily="Segoe MDL2 Assets" FontSize="16" />
+                            <TextBlock Text="التقارير الشهرية" Margin="10,0,0,0" />
+                        </DockPanel>
+                    </Button>
+                </StackPanel>
+
+                <Border DockPanel.Dock="Bottom"
+                        Background="#223049"
+                        CornerRadius="8"
+                        Padding="12">
+                    <StackPanel>
+                        <TextBlock Text="التخزين المحلي"
+                                   Foreground="#D8E4EF"
+                                   FontWeight="SemiBold" />
+                        <TextBlock x:Name="DatabasePathText"
+                                   TextWrapping="Wrap"
+                                   Foreground="#AEBED0"
+                                   FontSize="11"
+                                   Margin="0,6,0,0" />
+                    </StackPanel>
+                </Border>
+            </DockPanel>
+        </Border>
+
+        <Grid Grid.Column="1" Margin="24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <DockPanel Grid.Row="0" Margin="0,0,0,18">
+                <StackPanel>
+                    <TextBlock x:Name="PageTitleText"
+                               Text="الرئيسية"
+                               FontSize="28"
+                               FontWeight="Bold" />
+                    <TextBlock x:Name="PageSubtitleText"
+                               Text="ملخص سريع لحركة الطلبيات وقوائم الشراء."
+                               Foreground="{StaticResource MutedBrush}"
+                               Margin="0,5,0,0" />
+                </StackPanel>
+            </DockPanel>
+
+            <Grid Grid.Row="1">
+                <ScrollViewer x:Name="DashboardPanel" VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <UniformGrid Columns="3" Margin="0,0,0,18">
+                            <Border Style="{StaticResource PanelCard}" Margin="0,0,10,0">
+                                <StackPanel>
+                                    <TextBlock Text="عدد الطلبيات" Foreground="{StaticResource MutedBrush}" />
+                                    <TextBlock x:Name="OrdersCountText" Text="0" FontSize="34" FontWeight="Bold" Margin="0,6,0,0" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource PanelCard}" Margin="5,0">
+                                <StackPanel>
+                                    <TextBlock Text="عدد الموردين" Foreground="{StaticResource MutedBrush}" />
+                                    <TextBlock x:Name="SuppliersCountText" Text="0" FontSize="34" FontWeight="Bold" Margin="0,6,0,0" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource PanelCard}" Margin="10,0,0,0">
+                                <StackPanel>
+                                    <TextBlock Text="أصناف مطلوبة" Foreground="{StaticResource MutedBrush}" />
+                                    <TextBlock x:Name="ProductsCountText" Text="0" FontSize="34" FontWeight="Bold" Margin="0,6,0,0" />
+                                </StackPanel>
+                            </Border>
+                        </UniformGrid>
+
+                        <Border Style="{StaticResource PanelCard}">
+                            <StackPanel>
+                                <DockPanel Margin="0,0,0,12">
+                                    <TextBlock Text="أحدث الطلبيات" FontSize="18" FontWeight="SemiBold" />
+                                    <Button Content="طلبية جديدة"
+                                            DockPanel.Dock="Left"
+                                            Style="{StaticResource PrimaryButton}"
+                                            Click="NewOrderButton_Click" />
+                                </DockPanel>
+                                <DataGrid x:Name="RecentOrdersGrid"
+                                          ItemsSource="{Binding Orders}"
+                                          MinHeight="260"
+                                          IsReadOnly="True">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="الفرع" Binding="{Binding BranchName}" Width="2*" />
+                                        <DataGridTextColumn Header="التاريخ" Binding="{Binding OrderDateText}" Width="*" />
+                                        <DataGridTextColumn Header="عدد المنتجات" Binding="{Binding ItemCount}" Width="*" />
+                                        <DataGridTextColumn Header="ملاحظات" Binding="{Binding Notes}" Width="2*" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <Grid x:Name="OrderEditorPanel" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <Border Style="{StaticResource PanelCard}" Grid.Row="0" Margin="0,0,0,14">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2*" />
+                                <ColumnDefinition Width="160" />
+                                <ColumnDefinition Width="2*" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                <TextBlock Text="اسم الفرع" FontWeight="SemiBold" Margin="0,0,0,6" />
+                                <TextBox x:Name="BranchNameBox" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Margin="0,0,12,0">
+                                <TextBlock Text="تاريخ الطلبية" FontWeight="SemiBold" Margin="0,0,0,6" />
+                                <DatePicker x:Name="OrderDatePicker" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="ملاحظات" FontWeight="SemiBold" Margin="0,0,0,6" />
+                                <TextBox x:Name="OrderNotesBox" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <Border Style="{StaticResource PanelCard}" Grid.Row="1">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <DockPanel Margin="0,0,0,10">
+                                <TextBlock Text="منتجات الطلبية" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                                    <Button Content="إضافة منتج"
+                                            Style="{StaticResource SecondaryButton}"
+                                            Click="AddItemButton_Click"
+                                            Margin="8,0,0,0" />
+                                </StackPanel>
+                            </DockPanel>
+
+                            <!-- شريط العمليات الجماعية على المنتجات المحددة -->
+                            <Border Grid.Row="1"
+                                    Background="#F1F5FA"
+                                    BorderBrush="{StaticResource LineBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="6"
+                                    Padding="10,8"
+                                    Margin="0,0,0,10">
+                                <WrapPanel Orientation="Horizontal">
+                                    <TextBlock x:Name="SelectedItemsCountText"
+                                               Text="لم يتم تحديد أي منتج"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               MinWidth="150"
+                                               Margin="0,0,10,0" />
+
+                                    <Button Content="تحديد الكل" Style="{StaticResource SmallSecondaryButton}" Click="SelectAllItemsButton_Click" />
+                                    <Button Content="إلغاء التحديد" Style="{StaticResource SmallSecondaryButton}" Click="ClearItemsSelectionButton_Click" />
+
+                                    <Border Width="1" Background="{StaticResource LineBrush}" Margin="10,2" />
+
+                                    <TextBlock Text="الوحدة:" VerticalAlignment="Center" Margin="0,0,6,0" Foreground="{StaticResource MutedBrush}" />
+                                    <Button Content="حبه" Style="{StaticResource SmallSecondaryButton}" Click="AssignHabaButton_Click" />
+                                    <Button Content="كرز" Style="{StaticResource SmallSecondaryButton}" Click="AssignKarzButton_Click" />
+
+                                    <Border Width="1" Background="{StaticResource LineBrush}" Margin="10,2" />
+
+                                    <TextBlock Text="المورد:" VerticalAlignment="Center" Margin="0,0,6,0" Foreground="{StaticResource MutedBrush}" />
+                                    <ctrl:AutoCompleteTextBox x:Name="BulkSupplierBox"
+                                                              Width="190"
+                                                              Height="28"
+                                                              BorderThickness="1"
+                                                              Background="White"
+                                                              Padding="7,2"
+                                                              OpenOnFocus="False"
+                                                              Placeholder="اسم المورد"
+                                                              Source="{Binding SupplierSource}"
+                                                              VerticalAlignment="Center" />
+                                    <Button Content="إسناد للمحدد" Style="{StaticResource SmallSecondaryButton}" Click="AssignSupplierButton_Click" />
+                                    <Button Content="تطبيق قواعد الإسناد"
+                                            Style="{StaticResource SmallSecondaryButton}"
+                                            Click="ApplyRulesButton_Click"
+                                            ToolTip="إسناد الموردين تلقائيًا حسب الكلمات المفتاحية المعرّفة في شاشة قواعد الإسناد" />
+
+                                    <Border Width="1" Background="{StaticResource LineBrush}" Margin="10,2" />
+
+                                    <Button Content="حذف المحدد" Style="{StaticResource SmallDangerButton}" Click="RemoveItemsButton_Click" />
+                                </WrapPanel>
+                            </Border>
+
+                            <DataGrid x:Name="ItemsGrid"
+                                      Grid.Row="2"
+                                      ItemsSource="{Binding CurrentItems}"
+                                      IsReadOnly="True"
+                                      CanUserSortColumns="False"
+                                      SelectionUnit="FullRow"
+                                      EnableRowVirtualization="True"
+                                      VirtualizingPanel.IsVirtualizing="True"
+                                      VirtualizingPanel.VirtualizationMode="Recycling">
+                                <DataGrid.Columns>
+                                    <DataGridTemplateColumn Width="44">
+                                        <DataGridTemplateColumn.HeaderTemplate>
+                                            <DataTemplate>
+                                                <CheckBox Style="{StaticResource SelectionCheckBox}"
+                                                          ToolTip="تحديد كل المنتجات"
+                                                          Click="SelectAllItemsCheckBox_Click" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.HeaderTemplate>
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <CheckBox Style="{StaticResource SelectionCheckBox}"
+                                                          IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <DataGridTemplateColumn Header="اسم المنتج" Width="2.2*">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <ctrl:AutoCompleteTextBox
+                                                    Text="{Binding ProductName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                    Source="{Binding DataContext.ProductSource, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    ValueCommitted="ProductBox_ValueCommitted" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <DataGridTemplateColumn Header="الكمية" Width="90">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBox Style="{StaticResource CellEditor}"
+                                                         TextAlignment="Center"
+                                                         Text="{Binding Quantity, Mode=TwoWay, UpdateSourceTrigger=LostFocus, StringFormat=0.##}" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <DataGridTemplateColumn Header="الوحدة" Width="130">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                                    <RadioButton Content="حبه" IsChecked="{Binding IsHaba, Mode=TwoWay}" Margin="0,0,10,0" />
+                                                    <RadioButton Content="كرز" IsChecked="{Binding IsKarz, Mode=TwoWay}" />
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <DataGridTemplateColumn Header="المورد" Width="2*">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <ctrl:AutoCompleteTextBox
+                                                    Text="{Binding SupplierName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                    Source="{Binding DataContext.SupplierSource, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    ValueCommitted="SupplierBox_ValueCommitted" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <DataGridTemplateColumn Header="ملاحظات" Width="1.6*">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBox Style="{StaticResource CellEditor}"
+                                                         Text="{Binding Notes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Grid>
+                    </Border>
+
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,14,0,0">
+                        <Button Content="حفظ الطلبية" Style="{StaticResource PrimaryButton}" Click="SaveOrderButton_Click" Margin="8,0,0,0" />
+                        <Button Content="إلغاء" Style="{StaticResource SecondaryButton}" Click="OrdersButton_Click" />
+                    </StackPanel>
+                </Grid>
+
+                <Grid x:Name="OrdersPanel" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <DockPanel Grid.Row="0" Margin="0,0,0,12">
+                        <TextBlock Text="كل الطلبيات المحفوظة" FontSize="18" FontWeight="SemiBold" />
+                        <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                            <Button Content="طلبية جديدة" Style="{StaticResource PrimaryButton}" Click="NewOrderButton_Click" Margin="8,0,0,0" />
+                            <Button Content="عرض/تعديل" Style="{StaticResource SecondaryButton}" Click="EditOrderButton_Click" Margin="8,0,0,0" />
+                            <Button Content="حذف" Style="{StaticResource DangerButton}" Click="DeleteOrderButton_Click" />
+                        </StackPanel>
+                    </DockPanel>
+                    <Border Style="{StaticResource PanelCard}" Grid.Row="1">
+                        <DataGrid x:Name="OrdersGrid"
+                                  ItemsSource="{Binding Orders}"
+                                  IsReadOnly="True"
+                                  SelectionMode="Single"
+                                  MouseDoubleClick="OrdersGrid_MouseDoubleClick">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="الفرع" Binding="{Binding BranchName}" Width="2*" />
+                                <DataGridTextColumn Header="تاريخ الطلبية" Binding="{Binding OrderDateText}" Width="*" />
+                                <DataGridTextColumn Header="عدد المنتجات" Binding="{Binding ItemCount}" Width="*" />
+                                <DataGridTextColumn Header="ملاحظات" Binding="{Binding Notes}" Width="3*" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+                </Grid>
+
+                <Grid x:Name="PurchasePanel" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Border Style="{StaticResource PanelCard}" Grid.Row="0" Margin="0,0,0,14">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2*" />
+                                <ColumnDefinition Width="160" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                <TextBlock Text="اختر المورد" FontWeight="SemiBold" Margin="0,0,0,6" />
+                                <ComboBox x:Name="SupplierCombo"
+                                          ItemsSource="{Binding SupplierRows}"
+                                          DisplayMemberPath="Name"
+                                          SelectedValuePath="Name"
+                                          SelectionChanged="SupplierCombo_SelectionChanged" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="تاريخ الطلبيات" FontWeight="SemiBold" Margin="0,0,0,6" />
+                                <DatePicker x:Name="PurchaseDatePicker"
+                                            SelectedDateChanged="PurchaseDatePicker_SelectedDateChanged" />
+                            </StackPanel>
+                            <Button Grid.Column="2"
+                                    Content="إنشاء القائمة"
+                                    Style="{StaticResource PrimaryButton}"
+                                    Margin="12,22,0,0"
+                                    Click="GeneratePurchaseButton_Click" />
+                            <Button Grid.Column="3"
+                                    Content="معاينة الطباعة"
+                                    Style="{StaticResource SecondaryButton}"
+                                    Margin="8,22,0,0"
+                                    Click="PreviewPurchaseButton_Click" />
+                        </Grid>
+                    </Border>
+
+                    <Border Style="{StaticResource PanelCard}" Grid.Row="1">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <DockPanel Margin="0,0,0,12">
+                                <TextBlock x:Name="PurchaseSummaryText" Text="لم يتم إنشاء قائمة بعد." FontSize="18" FontWeight="SemiBold" />
+                            </DockPanel>
+                            <DataGrid x:Name="PurchaseGrid"
+                                      Grid.Row="1"
+                                      ItemsSource="{Binding PurchaseItems}"
+                                      IsReadOnly="True">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="م" Binding="{Binding RowNumber}" Width="60" />
+                                    <DataGridTextColumn Header="اسم المنتج" Binding="{Binding ProductName}" Width="2*" />
+                                    <DataGridTextColumn Header="إجمالي الكمية" Binding="{Binding QuantityText}" Width="*" />
+                                    <DataGridTextColumn Header="الوحدة" Binding="{Binding Unit}" Width="*" />
+                                    <DataGridTextColumn Header="تفاصيل الفروع" Binding="{Binding Sources}" Width="3*" />
+                                    <DataGridTextColumn Header="ملاحظات" Binding="{Binding Notes}" Width="2*" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Grid>
+                    </Border>
+
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,14,0,0">
+                        <Button Content="طباعة مباشرة" Style="{StaticResource PrimaryButton}" Click="PrintPurchaseButton_Click" Margin="8,0,0,0" />
+                        <Button Content="حفظ كصورة" Style="{StaticResource PrimaryButton}" Click="SavePurchaseAsPngButton_Click" Margin="8,0,0,0" />
+                        <Button Content="رجوع للرئيسية" Style="{StaticResource SecondaryButton}" Click="DashboardButton_Click" />
+                    </StackPanel>
+                </Grid>
+
+                <Grid x:Name="SuppliersPanel" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <DockPanel Grid.Row="0" Margin="0,0,0,12">
+                        <TextBlock Text="إدارة الموردين" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" />
+                        <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                            <Button Content="إضافة مورد" Style="{StaticResource PrimaryButton}" Click="AddSupplierButton_Click" Margin="8,0,0,0" />
+                            <Button Content="حذف المحدد" Style="{StaticResource DangerButton}" Click="DeleteSelectedSuppliersButton_Click" />
+                        </StackPanel>
+                    </DockPanel>
+                    <Border Style="{StaticResource PanelCard}" Grid.Row="1">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0"
+                                       Text="يمكنك تعديل اسم أي مورد (سيتم تحديثه في كل الطلبيات السابقة) أو حذف مورد غير مستخدم."
+                                       Foreground="{StaticResource MutedBrush}"
+                                       Margin="0,0,0,10" />
+                            <DataGrid x:Name="SuppliersGrid"
+                                      Grid.Row="1"
+                                      ItemsSource="{Binding SupplierRows}"
+                                      IsReadOnly="True">
+                                <DataGrid.Columns>
+                                    <DataGridTemplateColumn Width="44">
+                                        <DataGridTemplateColumn.HeaderTemplate>
+                                            <DataTemplate>
+                                                <CheckBox Style="{StaticResource SelectionCheckBox}"
+                                                          ToolTip="تحديد كل الموردين"
+                                                          Click="SelectAllSuppliersCheckBox_Click" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.HeaderTemplate>
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <CheckBox Style="{StaticResource SelectionCheckBox}"
+                                                          IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTextColumn Header="اسم المورد" Binding="{Binding Name}" Width="3*" />
+                                    <DataGridTextColumn Header="عدد أسطر الطلب" Binding="{Binding UsageText}" Width="*" />
+                                    <DataGridTextColumn Header="عدد الأصناف" Binding="{Binding ProductCount}" Width="*" />
+                                    <DataGridTemplateColumn Header="الإجراءات" Width="150">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                    <Button Content="تعديل"
+                                                            Style="{StaticResource SmallSecondaryButton}"
+                                                            Click="EditSupplierButton_Click" />
+                                                    <Button Content="حذف"
+                                                            Style="{StaticResource SmallDangerButton}"
+                                                            Click="DeleteSupplierButton_Click" />
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <Grid x:Name="RulesPanel" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <Border Style="{StaticResource PanelCard}" Grid.Row="0" Margin="0,0,0,14">
+                        <StackPanel>
+                            <TextBlock Text="أي منتج يحتوي اسمه على الكلمة المفتاحية يُسند تلقائيًا إلى المورد المحدد أثناء إدخال الطلبية."
+                                       Foreground="{StaticResource MutedBrush}"
+                                       Margin="0,0,0,12"
+                                       TextWrapping="Wrap" />
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="2*" />
+                                    <ColumnDefinition Width="2*" />
+                                    <ColumnDefinition Width="110" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                                    <TextBlock Text="الكلمة المفتاحية" FontWeight="SemiBold" Margin="0,0,0,6" />
+                                    <TextBox x:Name="NewRuleKeywordBox" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Margin="0,0,10,0">
+                                    <TextBlock Text="المورد" FontWeight="SemiBold" Margin="0,0,0,6" />
+                                    <ctrl:AutoCompleteTextBox x:Name="NewRuleSupplierBox"
+                                                              BorderThickness="1"
+                                                              Background="White"
+                                                              Padding="8,6"
+                                                              MinHeight="34"
+                                                              OpenOnFocus="False"
+                                                              Placeholder="اسم المورد"
+                                                              Source="{Binding SupplierSource}" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2" Margin="0,0,10,0">
+                                    <TextBlock Text="الأولوية" FontWeight="SemiBold" Margin="0,0,0,6" />
+                                    <TextBox x:Name="NewRulePriorityBox" Text="0" TextAlignment="Center" />
+                                </StackPanel>
+                                <Button Grid.Column="3"
+                                        Content="إضافة القاعدة"
+                                        Style="{StaticResource PrimaryButton}"
+                                        Margin="0,26,0,0"
+                                        Click="AddRuleButton_Click" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource PanelCard}" Grid.Row="1">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <DockPanel Margin="0,0,0,10">
+                                <TextBlock Text="القواعد المعرّفة" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                                    <Button Content="تحديد الكل" Style="{StaticResource SmallSecondaryButton}" Click="SelectAllRulesButton_Click" />
+                                    <Button Content="حذف المحدد" Style="{StaticResource SmallDangerButton}" Click="DeleteSelectedRulesButton_Click" />
+                                </StackPanel>
+                            </DockPanel>
+                            <DataGrid x:Name="RulesGrid"
+                                      Grid.Row="1"
+                                      ItemsSource="{Binding Rules}"
+                                      IsReadOnly="True"
+                                      CanUserSortColumns="False">
+                                <DataGrid.Columns>
+                                    <DataGridTemplateColumn Width="44">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <CheckBox Style="{StaticResource SelectionCheckBox}"
+                                                          IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="الكلمة المفتاحية" Width="2*">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBox Style="{StaticResource CellEditor}"
+                                                         Text="{Binding Keyword, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="المورد" Width="2*">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <ctrl:AutoCompleteTextBox
+                                                    Text="{Binding SupplierName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                    Source="{Binding DataContext.SupplierSource, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="الأولوية" Width="110">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBox Style="{StaticResource CellEditor}"
+                                                         TextAlignment="Center"
+                                                         Text="{Binding Priority, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="الإجراءات" Width="110">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Button Content="حذف"
+                                                        Style="{StaticResource SmallDangerButton}"
+                                                        HorizontalAlignment="Center"
+                                                        Click="DeleteRuleButton_Click" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <Grid x:Name="PreviewPanel" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Border Style="{StaticResource PanelCard}">
+                        <FlowDocumentScrollViewer x:Name="PrintPreviewViewer"
+                                                  VerticalScrollBarVisibility="Auto"
+                                                  HorizontalScrollBarVisibility="Auto" />
+                    </Border>
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,14,0,0">
+                        <Button Content="طباعة" Style="{StaticResource PrimaryButton}" Click="PrintPurchaseButton_Click" Margin="8,0,0,0" />
+                        <Button Content="حفظ كصورة" Style="{StaticResource PrimaryButton}" Click="SavePurchaseAsPngButton_Click" Margin="8,0,0,0" />
+                        <Button Content="رجوع للقائمة" Style="{StaticResource SecondaryButton}" Click="PreviewBackButton_Click" />
+                    </StackPanel>
+                </Grid>
+
+                <Grid x:Name="ImportProductsPanel" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <Border Style="{StaticResource PanelCard}" Grid.Row="0" Margin="0,0,0,14">
+                        <TextBlock Text="استيراد وإدارة المنتجات" FontSize="18" FontWeight="SemiBold" />
+                    </Border>
+
+                    <Border Style="{StaticResource PanelCard}" Grid.Row="1">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="20" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <!-- الجزء الأيمن: استيراد -->
+                            <Grid Grid.Column="0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+                                <TextBlock Text="إضافة منتجات جديدة (كل منتج في سطر مستقل):" FontWeight="SemiBold" Margin="0,0,0,10" />
+                                <TextBox x:Name="ImportProductsTextBox"
+                                         Grid.Row="1"
+                                         AcceptsReturn="True"
+                                         VerticalScrollBarVisibility="Auto"
+                                         TextWrapping="Wrap"
+                                         Padding="12"
+                                         FontSize="14"
+                                         VerticalContentAlignment="Top" />
+                            </Grid>
+
+                            <!-- الجزء الأيسر: عرض وإدارة المنتجات -->
+                            <Grid Grid.Column="2">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+                                <TextBlock x:Name="SavedProductsHeaderText"
+                                           Text="المنتجات المسجلة حالياً:"
+                                           FontWeight="SemiBold"
+                                           Margin="0,0,0,10" />
+
+                                <Grid Grid.Row="1" Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="بحث سريع:" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{StaticResource MutedBrush}" />
+                                    <TextBox x:Name="SearchSavedProductsBox"
+                                             Grid.Column="1"
+                                             Padding="8,5"
+                                             FontSize="13"
+                                             TextChanged="SearchSavedProductsBox_TextChanged" />
+                                </Grid>
+
+                                <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,10">
+                                    <Button Content="تحديد كل الظاهر" Style="{StaticResource SmallSecondaryButton}" Click="SelectAllProductsButton_Click" />
+                                    <Button Content="إلغاء التحديد" Style="{StaticResource SmallSecondaryButton}" Click="ClearProductsSelectionButton_Click" />
+                                    <Button Content="حذف المحدد" Style="{StaticResource SmallDangerButton}" Click="DeleteSelectedProductsButton_Click" />
+                                </StackPanel>
+
+                                <DataGrid x:Name="SavedProductsGrid"
+                                          Grid.Row="3"
+                                          ItemsSource="{Binding FilteredSavedProducts}"
+                                          IsReadOnly="True"
+                                          HeadersVisibility="None"
+                                          RowHeight="34"
+                                          VerticalScrollBarVisibility="Auto"
+                                          EnableRowVirtualization="True"
+                                          VirtualizingPanel.VirtualizationMode="Recycling">
+                                    <DataGrid.Columns>
+                                        <DataGridTemplateColumn Width="40">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <CheckBox Style="{StaticResource SelectionCheckBox}"
+                                                              IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                        <DataGridTextColumn Binding="{Binding Name}" Width="*" />
+                                        <DataGridTemplateColumn Width="130">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                        <Button Content="تعديل"
+                                                                Style="{StaticResource SmallSecondaryButton}"
+                                                                Click="EditProductButton_Click" />
+                                                        <Button Content="حذف"
+                                                                Style="{StaticResource SmallDangerButton}"
+                                                                Click="DeleteProductButton_Click" />
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </Grid>
+                        </Grid>
+                    </Border>
+
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,14,0,0">
+                        <Button Content="حفظ وتغذية القائمة المنسدلة" Style="{StaticResource PrimaryButton}" Click="SaveImportedProductsButton_Click" Margin="8,0,0,0" />
+                        <Button Content="إلغاء" Style="{StaticResource SecondaryButton}" Click="DashboardButton_Click" />
+                    </StackPanel>
+                </Grid>
+
+                <Grid x:Name="MonthlyReportsPanel" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Border Style="{StaticResource PanelCard}" Grid.Row="0" Margin="0,0,0,14">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                <TextBlock Text="اختر السنة" FontWeight="SemiBold" Margin="0,0,0,6" />
+                                <ComboBox x:Name="MonthlyYearCombo">
+                                    <ComboBoxItem Content="2025" />
+                                    <ComboBoxItem Content="2026" IsSelected="True" />
+                                    <ComboBoxItem Content="2027" />
+                                    <ComboBoxItem Content="2028" />
+                                    <ComboBoxItem Content="2029" />
+                                    <ComboBoxItem Content="2030" />
+                                </ComboBox>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Margin="0,0,12,0">
+                                <TextBlock Text="اختر الشهر" FontWeight="SemiBold" Margin="0,0,0,6" />
+                                <ComboBox x:Name="MonthlyMonthCombo">
+                                    <ComboBoxItem Tag="01" Content="01 - يناير" />
+                                    <ComboBoxItem Tag="02" Content="02 - فبراير" />
+                                    <ComboBoxItem Tag="03" Content="03 - مارس" />
+                                    <ComboBoxItem Tag="04" Content="04 - أبريل" />
+                                    <ComboBoxItem Tag="05" Content="05 - مايو" />
+                                    <ComboBoxItem Tag="06" Content="06 - يونيو" />
+                                    <ComboBoxItem Tag="07" Content="07 - يوليو" />
+                                    <ComboBoxItem Tag="08" Content="08 - أغسطس" />
+                                    <ComboBoxItem Tag="09" Content="09 - سبتمبر" />
+                                    <ComboBoxItem Tag="10" Content="10 - أكتوبر" />
+                                    <ComboBoxItem Tag="11" Content="11 - نوفمبر" />
+                                    <ComboBoxItem Tag="12" Content="12 - ديسمبر" />
+                                </ComboBox>
+                            </StackPanel>
+                            <Button Grid.Column="2"
+                                    Content="عرض التقرير"
+                                    Style="{StaticResource PrimaryButton}"
+                                    Margin="12,22,0,0"
+                                    Click="GenerateMonthlyReportButton_Click" />
+                        </Grid>
+                    </Border>
+
+                    <Border Style="{StaticResource PanelCard}" Grid.Row="1">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <DockPanel Margin="0,0,0,12">
+                                <TextBlock x:Name="MonthlyReportsSummaryText" Text="لم يتم عرض تقرير بعد." FontSize="18" FontWeight="SemiBold" />
+                            </DockPanel>
+                            <DataGrid x:Name="MonthlySupplierSummaryGrid"
+                                      Grid.Row="1"
+                                      ItemsSource="{Binding MonthlySuppliers}"
+                                      IsReadOnly="True">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="المورد" Binding="{Binding SupplierName}" Width="2*" />
+                                    <DataGridTextColumn Header="عدد الأصناف المميزة" Binding="{Binding ProductCount}" Width="*" />
+                                    <DataGridTextColumn Header="إجمالي الكميات المطلوبة" Binding="{Binding TotalQuantityText}" Width="*" />
+                                    <DataGridTemplateColumn Header="الإجراءات" Width="180">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Button Content="معاينة وطباعة"
+                                                        Style="{StaticResource SecondaryButton}"
+                                                        Padding="8,3"
+                                                        Margin="4,2"
+                                                        Click="PreviewMonthlySupplierButton_Click" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Grid>
+
+            <TextBlock x:Name="StatusText"
+                       Grid.Row="2"
+                       Text="جاهز"
+                       Foreground="{StaticResource MutedBrush}"
+                       FontSize="12"
+                       Margin="0,14,0,0" />
+        </Grid>
+    </Grid>
+</Window>
