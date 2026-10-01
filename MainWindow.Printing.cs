@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using SupplierPurchases.Data;
 using SupplierPurchases.Models;
 
 namespace SupplierPurchases;
@@ -11,15 +12,25 @@ namespace SupplierPurchases;
 /// <summary>بناء مستندات قوائم الشراء والتقارير الشهرية وطباعتها أو حفظها كصورة.</summary>
 public partial class MainWindow
 {
-    private static readonly Brush AlternateRowBrush = new SolidColorBrush(Color.FromRgb(245, 245, 245));
+    private static readonly Brush AlternateRowBrush = new SolidColorBrush(Color.FromRgb(243, 245, 248));
+    private static readonly Brush HeaderRowBrush = new SolidColorBrush(Color.FromRgb(31, 41, 55));
+    private static readonly Brush TotalRowBrush = new SolidColorBrush(Color.FromRgb(226, 232, 240));
+    private static readonly Brush GridLineBrush = new SolidColorBrush(Color.FromRgb(148, 163, 184));
 
+    /// <summary>هامش الصفحة حول المحتوى في الصورة والمعاينة.</summary>
+    private const double ReportPadding = 32;
+
+    /// <summary>دقة الصورة المحفوظة: ضعف دقة الشاشة حتى تبقى واضحة عند التكبير على الجوال.</summary>
+    private const double ImageScale = 2;
+
+    // ترتيب الأعمدة ثابت في كل التقارير: م، اسم المنتج، الكمية، الوحدة، ثم أي أعمدة إضافية.
+    // أسطر الإجمالي في أسفل الجدول تعتمد على هذا الترتيب.
     private static readonly ReportColumn[] PurchaseColumns =
     [
-        new("م", 40, TextAlignment.Center, item => item.RowNumber.ToString()),
-        new("اسم المنتج", 280, TextAlignment.Left, item => item.ProductName),
-        new("الكمية", 80, TextAlignment.Center, item => item.QuantityText),
-        new("الوحدة", 80, TextAlignment.Center, item => item.Unit),
-        new("ملاحظات", 170, TextAlignment.Left, item => item.Notes)
+        new("م", 46, TextAlignment.Center, item => item.RowNumber.ToString()),
+        new("اسم المنتج", 380, TextAlignment.Left, item => item.ProductName),
+        new("الكمية", 90, TextAlignment.Center, item => item.QuantityText),
+        new("الوحدة", 90, TextAlignment.Center, item => item.Unit)
     ];
 
     private static readonly ReportColumn[] MonthlyColumns =
@@ -121,15 +132,14 @@ public partial class MainWindow
     private FlowDocument BuildPurchaseDocument()
     {
         return BuildReportDocument(
-            title: null,
+            title: "طلب شراء",
             headerLines:
             [
                 ("اسم المورد: ", _currentSupplierName),
-                ("التاريخ: ", DateTime.Today.ToString("yyyy/MM/dd"))
+                ("تاريخ الطلبيات: ", _currentPurchaseDate.ToString("yyyy/MM/dd"))
             ],
             columns: PurchaseColumns,
-            items: PurchaseItems,
-            footer: $"إجمالي عدد الأصناف: {PurchaseItems.Count} صنف");
+            items: PurchaseItems);
     }
 
     private static FlowDocument BuildMonthlyPurchaseDocument(string supplierName, string yearMonth, List<PurchaseItem> items)
@@ -147,67 +157,61 @@ public partial class MainWindow
                 ("تاريخ استخراج التقرير: ", DateTime.Today.ToString("yyyy/MM/dd"))
             ],
             columns: MonthlyColumns,
-            items: items,
-            footer: $"إجمالي عدد الأصناف المطلوبة طوال الشهر: {items.Count} صنف");
+            items: items);
     }
 
     private static FlowDocument BuildReportDocument(
-        string? title,
+        string title,
         IReadOnlyList<(string Label, string Value)> headerLines,
         IReadOnlyList<ReportColumn> columns,
-        IReadOnlyList<PurchaseItem> items,
-        string footer)
+        IReadOnlyList<PurchaseItem> items)
     {
         var document = new FlowDocument
         {
             FlowDirection = FlowDirection.RightToLeft,
             FontFamily = new FontFamily("Segoe UI"),
-            FontSize = 14,
-            PagePadding = new Thickness(48),
-            ColumnWidth = double.PositiveInfinity
+            FontSize = 15,
+            PagePadding = new Thickness(ReportPadding),
+            ColumnWidth = double.PositiveInfinity,
+            Foreground = Brushes.Black
         };
 
-        // ── رأس التقرير ──
+        document.Blocks.Add(new Paragraph(new Run(title))
+        {
+            TextAlignment = TextAlignment.Center,
+            FontSize = 24,
+            FontWeight = FontWeights.Bold,
+            Margin = new Thickness(0, 0, 0, 14)
+        });
+
         // في الاتجاه من اليمين لليسار تعني المحاذاة لليسار بداية السطر أي جهة اليمين في الصفحة
         var headerParagraph = new Paragraph
         {
-            FlowDirection = FlowDirection.RightToLeft,
             TextAlignment = TextAlignment.Left,
-            Margin = new Thickness(0, 0, 0, 10),
-            LineHeight = 24
+            Margin = new Thickness(0, 0, 0, 12),
+            LineHeight = 26,
+            FontSize = 16
         };
 
-        if (!string.IsNullOrEmpty(title))
-        {
-            headerParagraph.Inlines.Add(new Run(title + "\n") { FontWeight = FontWeights.Bold, FontSize = 18, Foreground = Brushes.Black });
-        }
-
-        var headerFontSize = title is null ? 16 : 15;
         for (var i = 0; i < headerLines.Count; i++)
         {
             var (label, value) = headerLines[i];
-            var suffix = i == headerLines.Count - 1 ? string.Empty : "\n";
-            headerParagraph.Inlines.Add(new Run(label) { FontWeight = FontWeights.Bold, FontSize = headerFontSize, Foreground = Brushes.Black });
-            headerParagraph.Inlines.Add(new Run(value + suffix) { FontSize = headerFontSize, Foreground = Brushes.Black });
+            headerParagraph.Inlines.Add(new Run(label) { FontWeight = FontWeights.Bold });
+            headerParagraph.Inlines.Add(new Run(value));
+            if (i < headerLines.Count - 1)
+            {
+                headerParagraph.Inlines.Add(new LineBreak());
+            }
         }
 
         document.Blocks.Add(headerParagraph);
 
-        // ── خط فاصل ──
-        document.Blocks.Add(new BlockUIContainer(new Border
-        {
-            Height = 3.5,
-            Background = Brushes.Black,
-            Margin = new Thickness(0, 5, 0, 20)
-        }));
-
-        // ── جدول المنتجات ──
         var table = new Table
         {
             CellSpacing = 0,
             BorderBrush = Brushes.Black,
             BorderThickness = new Thickness(1.5),
-            Margin = new Thickness(0, 0, 0, 10)
+            Margin = new Thickness(0)
         };
 
         foreach (var column in columns)
@@ -220,7 +224,7 @@ public partial class MainWindow
         var headerRow = new TableRow();
         foreach (var column in columns)
         {
-            headerRow.Cells.Add(CreateTableCell(column.Header, isHeader: true, TextAlignment.Center));
+            headerRow.Cells.Add(CreateTableCell(column.Header, TextAlignment.Center, HeaderRowBrush, Brushes.White, FontWeights.Bold));
         }
 
         rowGroup.Rows.Add(headerRow);
@@ -231,114 +235,133 @@ public partial class MainWindow
             var row = new TableRow();
             foreach (var column in columns)
             {
-                row.Cells.Add(CreateTableCell(column.Value(item), isHeader: false, column.Alignment, alternate));
+                row.Cells.Add(CreateTableCell(column.Value(item), column.Alignment, alternate ? AlternateRowBrush : Brushes.White));
             }
 
             rowGroup.Rows.Add(row);
             alternate = !alternate;
         }
 
+        // أسطر الإجمالي: العنوان تحت عمودي م واسم المنتج، والقيمة تحت الكمية، والوحدة تحت الوحدة
+        foreach (var total in PurchaseTotals.ByUnit(items))
+        {
+            var row = new TableRow();
+            row.Cells.Add(CreateTableCell(total.Label, TextAlignment.Left, TotalRowBrush, fontWeight: FontWeights.Bold, columnSpan: 2));
+            row.Cells.Add(CreateTableCell(total.TotalText, TextAlignment.Center, TotalRowBrush, fontWeight: FontWeights.Bold));
+            row.Cells.Add(CreateTableCell(total.Unit, TextAlignment.Center, TotalRowBrush, fontWeight: FontWeights.Bold));
+            if (columns.Count > 4)
+            {
+                row.Cells.Add(CreateTableCell(string.Empty, TextAlignment.Center, TotalRowBrush, columnSpan: columns.Count - 4));
+            }
+
+            rowGroup.Rows.Add(row);
+        }
+
         table.RowGroups.Add(rowGroup);
         document.Blocks.Add(table);
-
-        document.Blocks.Add(new Paragraph(new Run(footer))
-        {
-            FontSize = 12,
-            FontWeight = FontWeights.Bold,
-            Foreground = Brushes.Black,
-            TextAlignment = TextAlignment.Left,
-            Margin = new Thickness(0, 12, 0, 0)
-        });
 
         return document;
     }
 
     private static TableCell CreateTableCell(
         string text,
-        bool isHeader = false,
-        TextAlignment alignment = TextAlignment.Right,
-        bool alternate = false)
+        TextAlignment alignment,
+        Brush background,
+        Brush? foreground = null,
+        FontWeight? fontWeight = null,
+        int columnSpan = 1)
     {
         return new TableCell(new Paragraph(new Run(text))
         {
             Margin = new Thickness(0),
-            TextAlignment = alignment,
-            FlowDirection = FlowDirection.RightToLeft
+            TextAlignment = alignment
         })
         {
-            BorderBrush = Brushes.Black,
-            BorderThickness = new Thickness(1),
-            Padding = new Thickness(8),
-            FontWeight = isHeader ? FontWeights.Bold : FontWeights.Normal,
-            Foreground = Brushes.Black,
-            Background = !isHeader && alternate ? AlternateRowBrush : Brushes.White
+            ColumnSpan = columnSpan,
+            BorderBrush = GridLineBrush,
+            BorderThickness = new Thickness(0.75),
+            Padding = new Thickness(10, 7, 10, 7),
+            FontWeight = fontWeight ?? FontWeights.Normal,
+            Foreground = foreground ?? Brushes.Black,
+            Background = background
         };
     }
 
-    /// <summary>يرسم المستند في صفحة واحدة طويلة حتى تظهر كل الأصناف داخل صورة واحدة.</summary>
+    /// <summary>
+    /// يرسم المستند في صورة واحدة بحجم المحتوى الفعلي: العرض حسب أعمدة الجدول،
+    /// والارتفاع ينتهي بعد آخر سطر بدون فراغ زائد مهما كان عدد الأصناف.
+    /// </summary>
     private static RenderTargetBitmap? RenderDocumentToImage(FlowDocument document)
     {
-        document.PageWidth = 816;
-        document.PagePadding = new Thickness(42);
+        var tableWidth = document.Blocks.OfType<Table>().FirstOrDefault()?.Columns.Sum(column => column.Width.Value) ?? 700;
+        var pageWidth = Math.Ceiling(tableWidth + (ReportPadding * 2) + 4);
+
+        document.PageWidth = pageWidth;
+        document.PagePadding = new Thickness(ReportPadding);
         document.ColumnWidth = double.PositiveInfinity;
 
-        var rowCount = CountTableRows(document);
-        var pageHeight = 320 + (rowCount * 42);
-
+        // أقل ارتفاع صفحة يدخل فيه كل المحتوى في صفحة واحدة، بالبحث الثنائي
         IDocumentPaginatorSource source = document;
+        var paginator = source.DocumentPaginator;
 
-        for (var attempt = 0; attempt < 5; attempt++)
+        int PageCountAt(double height)
         {
-            document.PageHeight = pageHeight;
-            var paginator = source.DocumentPaginator;
+            document.PageHeight = height;
             paginator.ComputePageCount();
-
-            if (paginator.PageCount <= 1)
-            {
-                break;
-            }
-
-            pageHeight += 200;
+            return paginator.PageCount;
         }
 
-        var documentPaginator = source.DocumentPaginator;
-        documentPaginator.ComputePageCount();
-        if (documentPaginator.PageCount == 0)
+        var high = 2000.0;
+        while (PageCountAt(high) > 1 && high < 400000)
+        {
+            high *= 2;
+        }
+
+        var low = ReportPadding * 2;
+        while (high - low > 1)
+        {
+            var middle = (low + high) / 2;
+            if (PageCountAt(middle) > 1)
+            {
+                low = middle;
+            }
+            else
+            {
+                high = middle;
+            }
+        }
+
+        if (PageCountAt(Math.Ceiling(high)) == 0)
         {
             return null;
         }
 
-        var page = documentPaginator.GetPage(0);
+        var page = paginator.GetPage(0);
+        var area = new Rect(0, 0, pageWidth, Math.Ceiling(high));
+
         var drawingVisual = new DrawingVisual();
         using (var context = drawingVisual.RenderOpen())
         {
-            var area = new Rect(new Point(), page.Size);
             context.DrawRectangle(Brushes.White, null, area);
-            context.DrawRectangle(new VisualBrush(page.Visual), null, area);
+            context.DrawRectangle(new VisualBrush(page.Visual)
+            {
+                Stretch = Stretch.None,
+                ViewboxUnits = BrushMappingMode.Absolute,
+                Viewbox = area,
+                ViewportUnits = BrushMappingMode.Absolute,
+                Viewport = area
+            }, null, area);
         }
 
         var target = new RenderTargetBitmap(
-            (int)Math.Ceiling(page.Size.Width),
-            (int)Math.Ceiling(page.Size.Height),
-            96,
-            96,
+            (int)Math.Ceiling(area.Width * ImageScale),
+            (int)Math.Ceiling(area.Height * ImageScale),
+            96 * ImageScale,
+            96 * ImageScale,
             PixelFormats.Pbgra32);
 
         target.Render(drawingVisual);
         return target;
-    }
-
-    private static int CountTableRows(FlowDocument document)
-    {
-        foreach (var block in document.Blocks)
-        {
-            if (block is Table table && table.RowGroups.Count > 0)
-            {
-                return Math.Max(table.RowGroups[0].Rows.Count - 1, 0);
-            }
-        }
-
-        return 10;
     }
 
     private static string GetMonthName(string monthNumber) => monthNumber switch

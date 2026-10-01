@@ -80,6 +80,7 @@ public partial class MainWindow
         var items = _database.GetPurchaseList(supplierName, date);
         ReplaceCollection(PurchaseItems, items);
         _currentSupplierName = supplierName;
+        _currentPurchaseDate = date;
 
         PurchaseSummaryText.Text = items.Count == 0
             ? $"لا توجد منتجات مطلوبة من {supplierName}."

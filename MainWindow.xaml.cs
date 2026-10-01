@@ -27,6 +27,7 @@ public partial class MainWindow : Window
 
     private int? _editingOrderId;
     private string _currentSupplierName = string.Empty;
+    private DateTime _currentPurchaseDate = DateTime.Today;
     private UIElement? _previewBackPanel;
 
     public MainWindow()
