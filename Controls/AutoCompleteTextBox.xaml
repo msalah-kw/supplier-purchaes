@@ -1,0 +1,89 @@
+<UserControl x:Class="SupplierPurchases.Controls.AutoCompleteTextBox"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Name="Root"
+             Background="Transparent"
+             BorderThickness="0"
+             BorderBrush="{StaticResource LineBrush}"
+             Padding="6,2"
+             Focusable="False">
+    <Grid>
+        <TextBox x:Name="InputBox"
+                 Text="{Binding Text, ElementName=Root, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                 Background="{Binding Background, ElementName=Root}"
+                 BorderBrush="{Binding BorderBrush, ElementName=Root}"
+                 BorderThickness="{Binding BorderThickness, ElementName=Root}"
+                 Padding="{Binding Padding, ElementName=Root}"
+                 VerticalContentAlignment="Center"
+                 MinHeight="0"
+                 TextChanged="InputBox_TextChanged"
+                 GotKeyboardFocus="InputBox_GotKeyboardFocus"
+                 LostKeyboardFocus="InputBox_LostKeyboardFocus" />
+
+        <TextBlock x:Name="PlaceholderText"
+                   Text="{Binding Placeholder, ElementName=Root}"
+                   IsHitTestVisible="False"
+                   Visibility="Collapsed"
+                   Foreground="{StaticResource MutedBrush}"
+                   Margin="{Binding Padding, ElementName=Root}"
+                   VerticalAlignment="Center" />
+
+        <Popup x:Name="SuggestionPopup"
+               PlacementTarget="{Binding ElementName=InputBox}"
+               Placement="Bottom"
+               StaysOpen="False"
+               AllowsTransparency="True"
+               PopupAnimation="None"
+               MinWidth="{Binding ActualWidth, ElementName=InputBox}">
+            <Border Background="White"
+                    BorderBrush="{StaticResource LineBrush}"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    Padding="2"
+                    SnapsToDevicePixels="True">
+                <ListBox x:Name="SuggestionList"
+                         Focusable="False"
+                         MaxHeight="260"
+                         MinWidth="220"
+                         BorderThickness="0"
+                         Background="Transparent"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                         VirtualizingPanel.IsVirtualizing="True"
+                         VirtualizingPanel.VirtualizationMode="Recycling"
+                         PreviewMouseLeftButtonDown="SuggestionList_PreviewMouseLeftButtonDown"
+                         PreviewMouseLeftButtonUp="SuggestionList_PreviewMouseLeftButtonUp"
+                         MouseMove="SuggestionList_MouseMove">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="Focusable" Value="False" />
+                            <Setter Property="Padding" Value="8,5" />
+                            <Setter Property="Cursor" Value="Hand" />
+                            <!-- تمييز العنصر المحدد بلون التطبيق بدل الأزرق الافتراضي -->
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ListBoxItem">
+                                        <Border x:Name="Bd"
+                                                Background="Transparent"
+                                                CornerRadius="3"
+                                                Padding="{TemplateBinding Padding}"
+                                                SnapsToDevicePixels="True">
+                                            <ContentPresenter />
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource SelectionHoverBrush}" />
+                                            </Trigger>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource SelectionBrush}" />
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                </ListBox>
+            </Border>
+        </Popup>
+    </Grid>
+</UserControl>

@@ -1,0 +1,10 @@
+D:\تجميع المشتريات\SupplierPurchases\bin\Release\net8.0-windows\win-x64\publish\SupplierPurchases.exe
+D:\تجميع المشتريات\SupplierPurchases\bin\Release\net8.0-windows\win-x64\publish\SupplierPurchases.dll
+D:\تجميع المشتريات\SupplierPurchases\bin\Release\net8.0-windows\win-x64\publish\SupplierPurchases.deps.json
+D:\تجميع المشتريات\SupplierPurchases\bin\Release\net8.0-windows\win-x64\publish\SupplierPurchases.runtimeconfig.json
+D:\تجميع المشتريات\SupplierPurchases\bin\Release\net8.0-windows\win-x64\publish\SupplierPurchases.pdb
+D:\تجميع المشتريات\SupplierPurchases\bin\Release\net8.0-windows\win-x64\publish\Microsoft.Data.Sqlite.dll
+D:\تجميع المشتريات\SupplierPurchases\bin\Release\net8.0-windows\win-x64\publish\SQLitePCLRaw.batteries_v2.dll
+D:\تجميع المشتريات\SupplierPurchases\bin\Release\net8.0-windows\win-x64\publish\SQLitePCLRaw.core.dll
+D:\تجميع المشتريات\SupplierPurchases\bin\Release\net8.0-windows\win-x64\publish\SQLitePCLRaw.provider.e_sqlite3.dll
+D:\تجميع المشتريات\SupplierPurchases\bin\Release\net8.0-windows\win-x64\publish\e_sqlite3.dll
