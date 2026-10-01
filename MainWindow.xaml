@@ -6,6 +6,7 @@
         xmlns:ctrl="clr-namespace:SupplierPurchases.Controls"
         mc:Ignorable="d"
         Title="تجميع مشتريات الموردين"
+        Icon="logo.ico"
         Height="760"
         Width="1180"
         MinHeight="700"
@@ -357,6 +358,7 @@
                 <Grid x:Name="OrdersPanel" Visibility="Collapsed">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
                     <DockPanel Grid.Row="0" Margin="0,0,0,12">
@@ -367,7 +369,43 @@
                             <Button Content="حذف" Style="{StaticResource DangerButton}" Click="DeleteOrderButton_Click" />
                         </StackPanel>
                     </DockPanel>
-                    <Border Style="{StaticResource PanelCard}" Grid.Row="1">
+                    <Border Style="{StaticResource PanelCard}" Grid.Row="1" Margin="0,0,0,14">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2*" />
+                                <ColumnDefinition Width="160" />
+                                <ColumnDefinition Width="160" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                <TextBlock Text="بحث بالفرع أو الملاحظات" FontWeight="SemiBold" Margin="0,0,0,6" />
+                                <TextBox x:Name="OrdersSearchBox" TextChanged="OrdersFilter_Changed" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Margin="0,0,12,0">
+                                <TextBlock Text="من تاريخ" FontWeight="SemiBold" Margin="0,0,0,6" />
+                                <DatePicker x:Name="OrdersFromDatePicker" SelectedDateChanged="OrdersFilter_Changed" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="2" Margin="0,0,12,0">
+                                <TextBlock Text="إلى تاريخ" FontWeight="SemiBold" Margin="0,0,0,6" />
+                                <DatePicker x:Name="OrdersToDatePicker" SelectedDateChanged="OrdersFilter_Changed" />
+                            </StackPanel>
+                            <Button Grid.Column="3"
+                                    Content="مسح الفلتر"
+                                    Style="{StaticResource SecondaryButton}"
+                                    VerticalAlignment="Bottom"
+                                    Click="ClearOrdersFilterButton_Click" />
+                            <TextBlock x:Name="OrdersFilterSummaryText"
+                                       Grid.Row="1"
+                                       Grid.ColumnSpan="4"
+                                       Foreground="{StaticResource MutedBrush}"
+                                       Margin="0,10,0,0" />
+                        </Grid>
+                    </Border>
+                    <Border Style="{StaticResource PanelCard}" Grid.Row="2">
                         <DataGrid x:Name="OrdersGrid"
                                   ItemsSource="{Binding Orders}"
                                   IsReadOnly="True"
@@ -802,14 +840,7 @@
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0" Margin="0,0,12,0">
                                 <TextBlock Text="اختر السنة" FontWeight="SemiBold" Margin="0,0,0,6" />
-                                <ComboBox x:Name="MonthlyYearCombo">
-                                    <ComboBoxItem Content="2025" />
-                                    <ComboBoxItem Content="2026" IsSelected="True" />
-                                    <ComboBoxItem Content="2027" />
-                                    <ComboBoxItem Content="2028" />
-                                    <ComboBoxItem Content="2029" />
-                                    <ComboBoxItem Content="2030" />
-                                </ComboBox>
+                                <ComboBox x:Name="MonthlyYearCombo" />
                             </StackPanel>
                             <StackPanel Grid.Column="1" Margin="0,0,12,0">
                                 <TextBlock Text="اختر الشهر" FontWeight="SemiBold" Margin="0,0,0,6" />

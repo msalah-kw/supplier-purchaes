@@ -13,13 +13,18 @@ public sealed class AppDatabase
     private readonly string _dbPath;
 
     public AppDatabase()
-    {
-        var appDirectory = Path.Combine(
+        : this(Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "SupplierPurchases");
+            "SupplierPurchases",
+            "supplier_purchases.db"))
+    {
+    }
 
-        Directory.CreateDirectory(appDirectory);
-        _dbPath = Path.Combine(appDirectory, "supplier_purchases.db");
+    /// <summary>يفتح قاعدة بيانات في مسار محدد. يُستخدم في الاختبارات.</summary>
+    public AppDatabase(string dbPath)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(dbPath)!);
+        _dbPath = dbPath;
     }
 
     public string DatabasePath => _dbPath;
@@ -299,6 +304,23 @@ public sealed class AppDatabase
         }
 
         return products;
+    }
+
+    /// <summary>آخر وحدة حُفظت لكل منتج في طلبية، بمفتاح الاسم الموحّد.</summary>
+    public Dictionary<string, string> GetProductDefaultUnits()
+    {
+        using var connection = OpenConnection();
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT normalized_name, default_unit FROM saved_products WHERE default_unit <> '';";
+
+        using var reader = command.ExecuteReader();
+        var units = new Dictionary<string, string>(StringComparer.Ordinal);
+        while (reader.Read())
+        {
+            units[reader.GetString(0)] = reader.GetString(1);
+        }
+
+        return units;
     }
 
     public void ImportProductNames(IEnumerable<string> names)
@@ -647,6 +669,26 @@ public sealed class AppDatabase
         command.Parameters.AddWithValue("@orderDate", date.ToString(DateFormat));
 
         return BuildPurchaseItems(ReadPurchaseRows(command));
+    }
+
+    /// <summary>السنوات التي توجد فيها طلبيات، من الأحدث إلى الأقدم.</summary>
+    public List<int> GetOrderYears()
+    {
+        using var connection = OpenConnection();
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT DISTINCT CAST(strftime('%Y', order_date) AS INTEGER) FROM orders ORDER BY 1 DESC;";
+
+        using var reader = command.ExecuteReader();
+        var years = new List<int>();
+        while (reader.Read())
+        {
+            if (!reader.IsDBNull(0))
+            {
+                years.Add(reader.GetInt32(0));
+            }
+        }
+
+        return years;
     }
 
     public List<MonthlySupplierSummary> GetMonthlySuppliersSummary(string yearMonth)
