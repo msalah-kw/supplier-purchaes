@@ -528,7 +528,7 @@
 
                     <Border Style="{StaticResource PanelCard}" Grid.Row="0" Margin="0,0,0,14">
                         <StackPanel>
-                            <TextBlock Text="أي منتج يحتوي اسمه على الكلمة المفتاحية يُسند تلقائيًا إلى المورد المحدد أثناء إدخال الطلبية."
+                            <TextBlock Text="أي منتج يحتوي اسمه على الكلمة المفتاحية يُسند تلقائيًا إلى المورد المحدد أثناء إدخال الطلبية، وتُضبط وحدته إذا اخترت وحدة للقاعدة."
                                        Foreground="{StaticResource MutedBrush}"
                                        Margin="0,0,0,12"
                                        TextWrapping="Wrap" />
@@ -536,6 +536,7 @@
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="2*" />
                                     <ColumnDefinition Width="2*" />
+                                    <ColumnDefinition Width="130" />
                                     <ColumnDefinition Width="110" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
@@ -555,10 +556,18 @@
                                                               Source="{Binding SupplierSource}" />
                                 </StackPanel>
                                 <StackPanel Grid.Column="2" Margin="0,0,10,0">
+                                    <TextBlock Text="الوحدة" FontWeight="SemiBold" Margin="0,0,0,6" />
+                                    <ComboBox x:Name="NewRuleUnitCombo" SelectedIndex="0">
+                                        <ComboBoxItem Content="بدون تغيير" Tag="" />
+                                        <ComboBoxItem Content="حبه" Tag="حبه" />
+                                        <ComboBoxItem Content="كرز" Tag="كرز" />
+                                    </ComboBox>
+                                </StackPanel>
+                                <StackPanel Grid.Column="3" Margin="0,0,10,0">
                                     <TextBlock Text="الأولوية" FontWeight="SemiBold" Margin="0,0,0,6" />
                                     <TextBox x:Name="NewRulePriorityBox" Text="0" TextAlignment="Center" />
                                 </StackPanel>
-                                <Button Grid.Column="3"
+                                <Button Grid.Column="4"
                                         Content="إضافة القاعدة"
                                         Style="{StaticResource PrimaryButton}"
                                         Margin="0,26,0,0"
@@ -608,6 +617,19 @@
                                                 <ctrl:AutoCompleteTextBox
                                                     Text="{Binding SupplierName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                     Source="{Binding DataContext.SupplierSource, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="الوحدة" Width="130">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <ComboBox SelectedValuePath="Tag"
+                                                          SelectedValue="{Binding Unit, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                          VerticalAlignment="Center">
+                                                    <ComboBoxItem Content="بدون تغيير" Tag="" />
+                                                    <ComboBoxItem Content="حبه" Tag="حبه" />
+                                                    <ComboBoxItem Content="كرز" Tag="كرز" />
+                                                </ComboBox>
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>

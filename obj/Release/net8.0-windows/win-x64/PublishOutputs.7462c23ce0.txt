@@ -1,8 +1,0 @@
-D:\تجميع المشتريات\SupplierPurchases\publish\SupplierPurchases.pdb
-D:\تجميع المشتريات\SupplierPurchases\publish\D3DCompiler_47_cor3.dll
-D:\تجميع المشتريات\SupplierPurchases\publish\PenImc_cor3.dll
-D:\تجميع المشتريات\SupplierPurchases\publish\PresentationNative_cor3.dll
-D:\تجميع المشتريات\SupplierPurchases\publish\vcruntime140_cor3.dll
-D:\تجميع المشتريات\SupplierPurchases\publish\wpfgfx_cor3.dll
-D:\تجميع المشتريات\SupplierPurchases\publish\e_sqlite3.dll
-D:\تجميع المشتريات\SupplierPurchases\publish\SupplierPurchases.exe

@@ -88,6 +88,7 @@ public sealed class AppDatabase
                 keyword_key TEXT NOT NULL,
                 supplier_name TEXT NOT NULL,
                 supplier_key TEXT NOT NULL,
+                unit TEXT NOT NULL DEFAULT '',
                 priority INTEGER NOT NULL DEFAULT 0
             );
 
@@ -102,6 +103,12 @@ public sealed class AppDatabase
             CREATE INDEX IF NOT EXISTS idx_items_product_supplier_unit ON order_items(product_key, supplier_key, unit_key);
             """;
         command.ExecuteNonQuery();
+
+        // قواعد الإسناد في القواعد القديمة لم يكن لها عمود الوحدة
+        if (!ColumnExists(connection, "supplier_rules", "unit"))
+        {
+            Execute(connection, null, "ALTER TABLE supplier_rules ADD COLUMN unit TEXT NOT NULL DEFAULT '';");
+        }
 
         // تُضاف قائمة المنتجات الجاهزة مرة واحدة فقط، حتى لا تعود المنتجات المحذوفة بعد إعادة التشغيل
         if (ReadMetaValue(connection, SeedFlagKey) is null)
@@ -197,6 +204,7 @@ public sealed class AppDatabase
             {
                 Id = itemsReader.GetInt32(0),
                 ProductName = itemsReader.GetString(1),
+                RuleCheckedProduct = itemsReader.GetString(1),
                 Quantity = itemsReader.GetDouble(2),
                 Unit = itemsReader.GetString(3),
                 SupplierName = itemsReader.GetString(4),
@@ -571,7 +579,7 @@ public sealed class AppDatabase
         using var connection = OpenConnection();
         using var command = connection.CreateCommand();
         command.CommandText = """
-            SELECT keyword, supplier_name, priority
+            SELECT keyword, supplier_name, priority, unit
             FROM supplier_rules
             ORDER BY priority DESC, keyword;
             """;
@@ -584,7 +592,8 @@ public sealed class AppDatabase
             {
                 Keyword = reader.GetString(0),
                 SupplierName = reader.GetString(1),
-                Priority = reader.GetInt32(2)
+                Priority = reader.GetInt32(2),
+                Unit = reader.GetString(3)
             });
         }
 
@@ -599,6 +608,7 @@ public sealed class AppDatabase
             {
                 Keyword = CleanName(rule.Keyword),
                 SupplierName = CleanName(rule.SupplierName),
+                Unit = SupplierRuleEngine.NormalizeUnit(rule.Unit),
                 rule.Priority
             })
             .Where(rule => rule.Keyword.Length > 0 && rule.SupplierName.Length > 0)
@@ -612,13 +622,14 @@ public sealed class AppDatabase
         foreach (var rule in validRules)
         {
             Execute(connection, transaction, """
-                INSERT INTO supplier_rules (keyword, keyword_key, supplier_name, supplier_key, priority)
-                VALUES (@keyword, @keywordKey, @supplier, @supplierKey, @priority);
+                INSERT INTO supplier_rules (keyword, keyword_key, supplier_name, supplier_key, unit, priority)
+                VALUES (@keyword, @keywordKey, @supplier, @supplierKey, @unit, @priority);
                 """,
                 ("@keyword", rule.Keyword),
                 ("@keywordKey", ArabicText.Normalize(rule.Keyword)),
                 ("@supplier", rule.SupplierName),
                 ("@supplierKey", NormalizeName(rule.SupplierName)),
+                ("@unit", rule.Unit),
                 ("@priority", rule.Priority));
 
             UpsertSavedSupplier(connection, transaction, rule.SupplierName);
@@ -935,6 +946,14 @@ public sealed class AppDatabase
         }
 
         command.ExecuteNonQuery();
+    }
+
+    private static bool ColumnExists(SqliteConnection connection, string table, string column)
+    {
+        using var command = connection.CreateCommand();
+        command.CommandText = $"SELECT COUNT(*) FROM pragma_table_info('{table}') WHERE name = @column;";
+        command.Parameters.AddWithValue("@column", column);
+        return Convert.ToInt32(command.ExecuteScalar()) > 0;
     }
 
     private static string? ReadMetaValue(SqliteConnection connection, string key)

@@ -83,6 +83,12 @@ public sealed class OrderItemRow : ObservableObject
         }
     }
 
+    /// <summary>
+    /// آخر اسم منتج طُبّقت عليه قواعد الإسناد. يمنع إعادة ضبط الوحدة عند مغادرة الحقل
+    /// بدون تغيير الاسم، حتى لا يُلغى اختيار الوحدة اليدوي.
+    /// </summary>
+    public string RuleCheckedProduct { get; set; } = string.Empty;
+
     public string Notes
     {
         get => _notes;

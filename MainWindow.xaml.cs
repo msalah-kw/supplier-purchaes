@@ -342,14 +342,30 @@ public partial class MainWindow : Window
         var applied = 0;
         foreach (var item in targets)
         {
-            var supplier = _ruleEngine.FindSupplier(item.ProductName);
-            if (supplier is null || item.SupplierName == supplier)
+            var match = _ruleEngine.FindMatch(item.ProductName);
+            if (match is null)
             {
                 continue;
             }
 
-            item.SupplierName = supplier;
-            applied++;
+            var changed = false;
+            if (item.SupplierName != match.SupplierName)
+            {
+                item.SupplierName = match.SupplierName;
+                changed = true;
+            }
+
+            if (match.Unit.Length > 0 && item.Unit != match.Unit)
+            {
+                item.Unit = match.Unit;
+                changed = true;
+            }
+
+            item.RuleCheckedProduct = AppDatabase.CleanName(item.ProductName);
+            if (changed)
+            {
+                applied++;
+            }
         }
 
         SetStatus(applied == 0
@@ -383,16 +399,32 @@ public partial class MainWindow : Window
 
         RegisterProductName(productName);
 
-        if (!string.IsNullOrWhiteSpace(row.SupplierName))
+        // الوحدة تُضبط فقط عند تغيير اسم المنتج، حتى لا يُلغى اختيار الوحدة اليدوي
+        var productChanged = row.RuleCheckedProduct != productName;
+        row.RuleCheckedProduct = productName;
+
+        var match = _ruleEngine.FindMatch(productName);
+        if (match is null)
         {
             return;
         }
 
-        var supplier = _ruleEngine.FindSupplier(productName);
-        if (supplier is not null)
+        var applied = new List<string>();
+        if (string.IsNullOrWhiteSpace(row.SupplierName))
         {
-            row.SupplierName = supplier;
-            SetStatus($"تم إسناد \"{productName}\" إلى المورد \"{supplier}\" تلقائيًا.");
+            row.SupplierName = match.SupplierName;
+            applied.Add($"المورد \"{match.SupplierName}\"");
+        }
+
+        if (productChanged && match.Unit.Length > 0 && row.Unit != match.Unit)
+        {
+            row.Unit = match.Unit;
+            applied.Add($"الوحدة \"{match.Unit}\"");
+        }
+
+        if (applied.Count > 0)
+        {
+            SetStatus($"تم ضبط {string.Join(" و", applied)} للمنتج \"{productName}\" تلقائيًا.");
         }
     }
 
@@ -880,13 +912,16 @@ public partial class MainWindow : Window
             priority = 0;
         }
 
-        var rule = new SupplierRuleRow { Keyword = keyword, SupplierName = supplierName, Priority = priority };
+        var unit = (NewRuleUnitCombo.SelectedItem as ComboBoxItem)?.Tag as string ?? string.Empty;
+
+        var rule = new SupplierRuleRow { Keyword = keyword, SupplierName = supplierName, Unit = unit, Priority = priority };
         rule.PropertyChanged += Rule_PropertyChanged;
         Rules.Add(rule);
 
         NewRuleKeywordBox.Text = string.Empty;
         NewRuleSupplierBox.Text = string.Empty;
         NewRulePriorityBox.Text = "0";
+        NewRuleUnitCombo.SelectedIndex = 0;
         NewRuleKeywordBox.Focus();
 
         SaveRules();
@@ -945,6 +980,7 @@ public partial class MainWindow : Window
     {
         if (e.PropertyName is nameof(SupplierRuleRow.Keyword)
             or nameof(SupplierRuleRow.SupplierName)
+            or nameof(SupplierRuleRow.Unit)
             or nameof(SupplierRuleRow.Priority))
         {
             _rulesSaveTimer.Stop();

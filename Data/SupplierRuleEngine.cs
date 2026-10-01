@@ -4,7 +4,7 @@ namespace SupplierPurchases.Data;
 
 /// <summary>
 /// يطبّق قواعد الإسناد التلقائي: أي منتج يحتوي اسمه على كلمة مفتاحية معينة
-/// يُسند إلى المورد المرتبط بها. القاعدة ذات الأولوية الأعلى ثم الكلمة الأطول تفوز.
+/// يُسند إلى المورد المرتبط بها، وتُضبط وحدته إن حددتها القاعدة. القاعدة ذات الأولوية الأعلى ثم الكلمة الأطول تفوز.
 /// </summary>
 public sealed class SupplierRuleEngine
 {
@@ -18,6 +18,7 @@ public sealed class SupplierRuleEngine
             .Select(rule => new CompiledRule(
                 ArabicText.Normalize(rule.Keyword),
                 AppDatabase.CleanName(rule.SupplierName),
+                NormalizeUnit(rule.Unit),
                 rule.Priority))
             .Where(rule => rule.Keyword.Length > 0 && rule.SupplierName.Length > 0)
             .OrderByDescending(rule => rule.Priority)
@@ -25,8 +26,8 @@ public sealed class SupplierRuleEngine
             .ToArray();
     }
 
-    /// <summary>يعيد اسم المورد المطابق لاسم المنتج، أو null إذا لم تنطبق أي قاعدة.</summary>
-    public string? FindSupplier(string? productName)
+    /// <summary>يعيد القاعدة المطابقة لاسم المنتج، أو null إذا لم تنطبق أي قاعدة.</summary>
+    public RuleMatch? FindMatch(string? productName)
     {
         if (_rules.Length == 0 || string.IsNullOrWhiteSpace(productName))
         {
@@ -38,12 +39,22 @@ public sealed class SupplierRuleEngine
         {
             if (normalizedProduct.Contains(rule.Keyword, StringComparison.Ordinal))
             {
-                return rule.SupplierName;
+                return new RuleMatch(rule.SupplierName, rule.Unit);
             }
         }
 
         return null;
     }
 
-    private sealed record CompiledRule(string Keyword, string SupplierName, int Priority);
+    /// <summary>يقبل حبه أو كرز فقط، وأي قيمة أخرى تعني عدم تغيير الوحدة.</summary>
+    public static string NormalizeUnit(string? unit)
+    {
+        var cleaned = AppDatabase.CleanName(unit);
+        return cleaned is OrderItemRow.UnitHaba or OrderItemRow.UnitKarz ? cleaned : string.Empty;
+    }
+
+    private sealed record CompiledRule(string Keyword, string SupplierName, string Unit, int Priority);
 }
+
+/// <summary>نتيجة مطابقة قاعدة: المورد، والوحدة (فارغة إذا لم تحدد القاعدة وحدة).</summary>
+public sealed record RuleMatch(string SupplierName, string Unit);
