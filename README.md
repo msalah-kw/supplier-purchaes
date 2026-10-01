@@ -14,6 +14,10 @@
 - قاعدة بيانات SQLite محلية مع نسخة احتياطية يومية تلقائية.
 - لا يحتاج إنترنت ولا خادم.
 
+## التحميل
+
+حمّل آخر نسخة جاهزة من صفحة [Releases](https://github.com/msalah-kw/supplier-purchaes/releases/latest)، ثم فك ضغط الملف وشغّل `SupplierPurchases.exe`. النسخة لا تحتاج تثبيت .NET.
+
 ## المتطلبات
 
 - Windows 10 أو أحدث
